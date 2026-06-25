@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Restaurante Firebase</title>
+    <style>
+        :root {
+            --primary: #e67e22;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f6fa; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { color: var(--dark); margin-top: 0; border-bottom: 2px solid var(--light); padding-bottom: 10px; }
+        
+        /* Selector de base de datos */
+        .db-selector { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: flex; gap: 15px; align-items: center; border-left: 5px solid var(--primary); }
+        .db-selector label { font-weight: bold; color: var(--dark); }
+        .db-selector input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; flex-grow: 1; font-size: 16px; }
+        .db-selector button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.2s; }
+        .db-selector button:hover { background: #d35400; }
+
+        /* Estado */
+        #status { padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; font-weight: 500; font-size: 14px; display: inline-block; }
+        .loading { background: #ffeaa7; color: #d63031; }
+        .success { background: #55efc4; color: #00b894; }
+        .error { background: #ff7675; color: white; }
+
+        /* Tabla de Datos */
+        .table-container { overflow-x: auto; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; background: white; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--light); }
+        th { background-color: var(--dark); color: white; font-weight: 600; }
+        tr:hover { background-color: #f9f9f9; }
+        
+        .no-data { text-align: center; padding: 40px; color: #7f8c8d; font-style: italic; }
+        pre { margin: 0; font-family: monospace; background: #f1f2f6; padding: 5px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🍽️ Panel de Control: restaurante-ce3c8</h1>
+    
+    <div class="db-selector">
+        <label for="collectionName">Colección activa (Tabla):</label>
+        <input type="text" id="collectionName" value="menu" placeholder="Ej: menu, pedidos, usuarios, productos...">
+        <button id="btnCambiar">Cargar / Cambiar</button>
+    </div>
+
+    <div id="status" class="loading">Conectando con Firebase...</div>
+
+    <div class="table-container">
+        <table id="dataTable">
+            <thead>
+                <tr id="tableHeaders">
+                    <th>ID del Documento</th>
+                    <th>Datos (Campos de la base de datos)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr>
+                    <td colspan="2" class="no-data">Introduce o cambia la colección arriba para buscar datos.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Configuración de tu API
+    const firebaseConfig = {
+        apiKey: "AIzaSyCI2Prwq-gjnEHga1PA5wbE3j5xmPQtKpg",
+        authDomain: "restaurante-ce3c8.firebaseapp.com",
+        projectId: "restaurante-ce3c8",
+        storageBucket: "restaurante-ce3c8.firebasestorage.app",
+        messagingSenderId: "303314247342",
+        appId: "1:303314247342:web:cc05d4360d46b3ad02173f"
+    };
+
+    // Inicializar Firebase
+    let db;
+    try {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        updateStatus("Conectado a Firebase. Listo para buscar colecciones.", "success");
+    } catch (e) {
+        updateStatus("Error de conexión: " + e.message, "error");
+    }
+
+    // Escuchar el botón para cambiar de colección
+    document.getElementById("btnCambiar").addEventListener("click", () => {
+        const coleccion = document.getElementById("collectionName").value.trim();
+        if (coleccion) {
+            cargarColeccion(coleccion);
+        }
+    });
+
+    // Función principal para leer y cambiar la colección activa
+    async function cargarColeccion(nombreColeccion) {
+        updateStatus(`Cargando datos de la colección "${nombreColeccion}"...`, "loading");
+        
+        const tableBody = document.getElementById("tableBody");
+        const tableHeaders = document.getElementById("tableHeaders");
+        
+        try {
+            const querySnapshot = await getDocs(collection(db, nombreColeccion));
+            tableBody.innerHTML = ""; // Limpiar tabla
+            
+            if (querySnapshot.empty) {
+                tableBody.innerHTML = `<tr><td colspan="2" class="no-data">La colección "${nombreColeccion}" no existe o no tiene documentos cargados.</td></tr>`;
+                updateStatus(`Búsqueda finalizada: "${nombreColeccion}" está vacía.`, "success");
+                return;
+            }
+
+            // Variable para detectar las columnas dinámicamente si los datos son planos
+            let columnasDetectadas = new Set();
+
+            querySnapshot.forEach((doc) => {
+                const datos = doc.data();
+                
+                // Creamos una fila por cada documento encontrado
+                const fila = document.createElement("tr");
+                
+                // Columna 1: ID
+                const tdId = document.createElement("td");
+                tdId.innerHTML = `<strong>${doc.id}</strong>`;
+                fila.appendChild(tdId);
+                
+                // Columna 2: Contenido en JSON ordenado
+                const tdDatos = document.createElement("td");
+                tdDatos.innerHTML = `<pre>${JSON.stringify(datos, null, 2)}</pre>`;
+                fila.appendChild(tdDatos);
+                
+                tableBody.appendChild(fila);
+            });
+
+            updateStatus(`Mostrando datos de la colección: "${nombreColeccion}"`, "success");
+
+        } catch (error) {
+            console.error(error);
+            tableBody.innerHTML = `<tr><td colspan="2" class="no-data">Error de permisos. Asegúrate de que las reglas de Firebase sean públicas.</td></tr>`;
+            updateStatus("Error al acceder: " + error.message, "error");
+        }
+    }
+
+    // Helper para actualizar el banner de estado
+    function updateStatus(texto, clase) {
+        const statusDiv = document.getElementById("status");
+        statusDiv.innerText = texto;
+        statusDiv.className = clase;
+    }
+
+    // Carga inicial por defecto con la palabra "menu"
+    if(db) cargarColeccion("menu");
+</script>
+</body>
+</html>
