@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor en Vivo - Restaurante Firebase</title>
+    <title>Editor Maestro - Restaurante Firebase</title>
     <style>
         :root {
             --primary: #e67e22;
@@ -23,15 +23,14 @@
         .card-success { border-left-color: var(--success-color); }
         h3 { margin-top: 0; color: var(--dark); }
         
-        label { font-weight: bold; display: block; margin-bottom: 5px; color: var(--dark); }
-        input, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; font-size: 14px; margin-bottom: 15px; box-sizing: border-box; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: var(--dark); font-size: 14px; }
+        input, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; font-size: 14px; margin-bottom: 12px; box-sizing: border-box; }
         
         button { color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         .btn-primary { background: var(--primary); width: 100%; }
         .btn-success { background: var(--success-color); width: 100%; }
         
-        /* Botones de la tabla */
         .btn-table-save { background: #3498db; padding: 6px 12px; font-size: 12px; margin-right: 5px; }
         .btn-table-delete { background: var(--danger-color); padding: 6px 12px; font-size: 12px; }
 
@@ -40,7 +39,7 @@
         .success { background: #55efc4; color: #00b894; }
         .error { background: #ff7675; color: white; }
 
-        /* Tabla */
+        /* Tabla Estructurada */
         .table-container { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; background: white; text-align: left; }
         th, td { padding: 12px 15px; border-bottom: 1px solid var(--light); vertical-align: middle; }
@@ -48,27 +47,32 @@
         tr:hover { background-color: #f9f9f9; }
         
         .no-data { text-align: center; padding: 40px; color: #7f8c8d; font-style: italic; }
-        .edit-area { font-family: monospace; font-size: 13px; height: 60px; margin-bottom: 0; resize: vertical; }
+        .row-input { font-family: monospace; font-size: 13px; padding: 6px; margin-bottom: 0; width: 100%; height: 70px; resize: vertical;}
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🍽️ Editor de Base de Datos En Vivo: restaurante-ce3c8</h1>
+    <h1>🍽️ Panel de Control Definitivo: restaurante-ce3c8</h1>
     
     <div class="grid">
         <div class="card">
-            <h3>Navegar Base de Datos</h3>
-            <label for="collectionName">Colección (Tabla) a editar:</label>
-            <input type="text" id="collectionName" value="menu" placeholder="Ej: menu, pedidos, productos...">
-            <button id="btnCambiar" class="btn-primary">Cargar Colección</button>
+            <h3>Navegar Colecciones</h3>
+            <label for="collectionName">Colección a editar (Prueba con "usuarios"):</label>
+            <input type="text" id="collectionName" value="usuarios" placeholder="Ej: usuarios, pedidos, menu...">
+            <button id="btnCambiar" class="btn-primary">Cargar Tabla</button>
         </div>
 
         <div class="card card-success">
-            <h3>Crear Nuevo Registro</h3>
-            <label for="documentData">Datos en formato JSON:</label>
-            <textarea id="documentData" rows="3" placeholder='{"nombre": "Platillo", "precio": 10}'></textarea>
-            <button id="btnGuardar" class="btn-success">Guardar en Firebase</button>
+            <h3>Restaurar Usuario (Con el localId de la API)</h3>
+            
+            <label for="customDocId">ID del Documento (Pega aquí el localId obtenido):</label>
+            <input type="text" id="customDocId" placeholder="Ej: U3Y1bXpRdEtwZ0NJMlByd3Et...">
+            
+            <label for="documentData">Campos del Usuario en JSON:</label>
+            <textarea id="documentData" rows="3" placeholder='{"nombre": "Juan Pérez", "correo": "juan@gmail.com", "rol": "cliente"}'></textarea>
+            
+            <button id="btnGuardar" class="btn-success">Recrear Usuario en la Nube</button>
         </div>
     </div>
 
@@ -78,9 +82,9 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 25%;">ID del Documento</th>
-                    <th style="width: 50%;">Datos (¡Puedes editarlos directamente aquí!)</th>
-                    <th style="width: 25%;">Acciones</th>
+                    <th style="width: 30%;">ID del Usuario (UID)</th>
+                    <th style="width: 50%;">Contenido del Perfil (JSON Modificable)</th>
+                    <th style="width: 20%;">Acciones</th>
                 </tr>
             </thead>
             <tbody id="tableBody">
@@ -94,7 +98,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCI2Prwq-gjnEHga1PA5wbE3j5xmPQtKpg",
@@ -106,7 +110,7 @@
     };
 
     let db;
-    let coleccionActual = "menu";
+    let coleccionActual = "usuarios";
 
     try {
         const app = initializeApp(firebaseConfig);
@@ -117,7 +121,6 @@
         updateStatus("Error de conexión: " + e.message, "error");
     }
 
-    // Cambiar de colección
     document.getElementById("btnCambiar").addEventListener("click", () => {
         const coleccion = document.getElementById("collectionName").value.trim();
         if (coleccion) {
@@ -126,23 +129,32 @@
         }
     });
 
-    // Guardar nuevo registro
+    // GUARDAR O RECREAR UN USUARIO CON SU ID PERSONALIZADO (localId)
     document.getElementById("btnGuardar").addEventListener("click", async () => {
+        const customId = document.getElementById("customDocId").value.trim();
         const jsonTexto = document.getElementById("documentData").value.trim();
-        if (!jsonTexto) return alert("Escribe datos válidos.");
+        
+        if (!customId || !jsonTexto) {
+            return alert("Por favor rellenar tanto el ID (localId) como los Datos del usuario.");
+        }
+
         try {
-            const objeto = JSON.parse(jsonTexto);
-            updateStatus("Guardando nuevo registro...", "loading");
-            await addDoc(collection(db, coleccionActual), objeto);
-            updateStatus("¡Registro creado!", "success");
+            const objetoDatos = JSON.parse(jsonTexto);
+            updateStatus("Inyectando usuario en Firestore...", "loading");
+            
+            // Usamos setDoc en lugar de addDoc para poder asignarle nosotros mismos el ID que queremos
+            await setDoc(doc(db, coleccionActual, customId), objetoDatos);
+            
+            updateStatus("¡Usuario restaurado con éxito con su ID original!", "success");
+            document.getElementById("customDocId").value = "";
             document.getElementById("documentData").value = "";
             cargarColeccion(coleccionActual);
         } catch (error) {
-            alert("JSON inválido o error de Firebase: " + error.message);
+            alert("Error en el formato JSON o en Firebase: " + error.message);
         }
     });
 
-    // Leer y renderizar tabla editable
+    // Cargar registros editables
     async function cargarColeccion(nombreColeccion) {
         const tableBody = document.getElementById("tableBody");
         try {
@@ -150,7 +162,7 @@
             tableBody.innerHTML = "";
             
             if (querySnapshot.empty) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="no-data">La colección está vacía.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="3" class="no-data">La colección "${nombreColeccion}" está vacía en este momento.</td></tr>`;
                 return;
             }
 
@@ -160,21 +172,21 @@
                 
                 const fila = document.createElement("tr");
 
-                // Columna 1: ID
+                // ID Fijo (No modificable para no romper la base de datos)
                 const tdId = document.createElement("td");
-                tdId.innerHTML = `<code>${idDoc}</code>`;
+                tdId.innerHTML = `<code style="background:#eee; padding:4px; border-radius:4px;">${idDoc}</code>`;
                 fila.appendChild(tdId);
 
-                // Columna 2: Textarea editable con el contenido JSON
+                // Cuadro de texto plano para los datos
                 const tdDatos = document.createElement("td");
                 const textarea = document.createElement("textarea");
-                textarea.className = "edit-area";
+                textarea.className = "row-input";
                 textarea.value = JSON.stringify(datosDoc, null, 2);
-                textarea.id = `text-${idDoc}`;
+                textarea.id = `input-${idDoc}`;
                 tdDatos.appendChild(textarea);
                 fila.appendChild(tdDatos);
 
-                // Columna 3: Botones de Acción (Guardar Cambios / Eliminar)
+                // Acciones
                 const tdAcciones = document.createElement("td");
                 
                 const btnActualizar = document.createElement("button");
@@ -193,50 +205,16 @@
 
                 tableBody.appendChild(fila);
             });
-            updateStatus(`Viendo y editando: "${nombreColeccion}"`, "success");
+            updateStatus(`Editando colección: "${nombreColeccion}"`, "success");
         } catch (error) {
-            tableBody.innerHTML = `<tr><td colspan="3" class="no-data">Error de permisos.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="3" class="no-data">Error de permisos o base de datos no configurada.</td></tr>`;
             updateStatus("Error: " + error.message, "error");
         }
     }
 
-    // FUNCIÓN PARA ACTUALIZAR LOS DATOS YA CREADOS
+    // ACTUALIZAR REGISTRO MODIFICADO
     async function actualizarRegistro(idDoc) {
-        const nuevoTexto = document.getElementById(`text-${idDoc}`).value;
+        const textoModificado = document.getElementById(`input-${idDoc}`).value;
         try {
-            const nuevoObjeto = JSON.parse(nuevoTexto);
-            updateStatus("Actualizando datos en Firebase...", "loading");
-            
-            // Apuntar al documento específico y sobreescribir los datos
-            const docRef = doc(db, coleccionActual, idDoc);
-            await updateDoc(docRef, nuevoObjeto);
-            
-            updateStatus("¡Registro modificado con éxito en la nube!", "success");
-        } catch (error) {
-            alert("Error: Asegúrate de que el JSON modificado sea válido.\n" + error.message);
-            updateStatus("Error al actualizar.", "error");
-        }
-    }
-
-    // FUNCIÓN PARA ELIMINAR UN REGISTRO
-    async function eliminarRegistro(idDoc) {
-        if (!confirm("¿Seguro que quieres eliminar este registro permanentemente?")) return;
-        try {
-            updateStatus("Eliminando de la nube...", "loading");
-            const docRef = doc(db, coleccionActual, idDoc);
-            await deleteDoc(docRef);
-            updateStatus("Registro eliminado.", "success");
-            cargarColeccion(coleccionActual);
-        } catch (error) {
-            updateStatus("Error al eliminar: " + error.message, "error");
-        }
-    }
-
-    function updateStatus(texto, clase) {
-        const statusDiv = document.getElementById("status");
-        statusDiv.innerText = texto;
-        statusDiv.className = clase;
-    }
-</script>
-</body>
-</html>
+            const objetoLimpio = JSON.parse(textoModificado);
+            updateStatus("Guardando cambios...", "loading");
