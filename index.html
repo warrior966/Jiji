@@ -3,271 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor en Vivo - Restaurante Firebase</title>
+    <title>Panel de Administración - Base de Datos</title>
     <style>
-        :root {
-            --primary: #e67e22;
-            --success-color: #2ecc71;
-            --danger-color: #e74c3c;
-            --dark: #2c3e50;
-            --light: #ecf0f1;
+        /* Diseño extraído y adaptado de tu web original */
+        body {
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            margin: 0; padding: 0;
+            background-color: #121214;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f5f6fa; color: #333; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1 { color: var(--dark); margin-top: 0; border-bottom: 2px solid var(--light); padding-bottom: 10px; }
+        header {
+            background-color: #1e1e24;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a32;
+        }
+        .logo { font-size: 22px; font-weight: 700; color: #ff5a36; }
         
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .zona-centrada {
+            flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px;
+        }
+        .contenedor-principal {
+            width: 100%; max-width: 420px;
+            background-color: #1e1e24; padding: 40px 30px;
+            border-radius: 20px; border: 1px solid #2a2a32;
+            box-shadow: 0px 15px 35px rgba(0,0,0,0.5); text-align: center;
+        }
+        .pantalla-interior {
+            width: 100%; max-width: 1280px; margin: 0 auto;
+            background-color: #1e1e24; padding: 40px;
+            border-radius: 20px; border: 1px solid #2a2a32;
+            box-shadow: 0px 15px 35px rgba(0,0,0,0.5);
+        }
+        .oculto { display: none !important; }
 
-        .card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid var(--primary); box-sizing: border-box; }
-        .card-success { border-left-color: var(--success-color); }
-        h3 { margin-top: 0; color: var(--dark); }
-        
-        label { font-weight: bold; display: block; margin-bottom: 5px; color: var(--dark); }
-        input, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; font-size: 14px; margin-bottom: 15px; box-sizing: border-box; }
-        
-        button { color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        .btn-primary { background: var(--primary); width: 100%; }
-        .btn-success { background: var(--success-color); width: 100%; }
-        
-        /* Botones de la tabla */
-        .btn-table-save { background: #3498db; padding: 6px 12px; font-size: 12px; margin-right: 5px; }
-        .btn-table-delete { background: var(--danger-color); padding: 6px 12px; font-size: 12px; }
+        h2, h3 { color: #ffffff; margin-top: 0; }
+        .text-accent { color: #ff5a36; }
+        .subtitulo { color: #a1a1aa; font-size: 14px; margin-bottom: 25px; }
 
-        #status { padding: 10px 15px; border-radius: 6px; margin-top: 20px; font-weight: 500; font-size: 14px; display: block; text-align: center; }
-        .loading { background: #ffeaa7; color: #d63031; }
-        .success { background: #55efc4; color: #00b894; }
-        .error { background: #ff7675; color: white; }
-
-        /* Tabla */
-        .table-container { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; background: white; text-align: left; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid var(--light); vertical-align: middle; }
-        th { background-color: var(--dark); color: white; font-weight: 600; }
-        tr:hover { background-color: #f9f9f9; }
+        label { display: block; font-size: 12px; font-weight: 600; color: #a1a1aa; text-transform: uppercase; margin-bottom: 8px; text-align: left; }
+        input, textarea, select {
+            width: 100%; box-sizing: border-box; padding: 14px;
+            background-color: #121214; border: 1px solid #2a2a32; border-radius: 10px;
+            color: white; font-size: 15px; font-family: inherit; margin-bottom: 20px;
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #ff5a36; }
         
-        .no-data { text-align: center; padding: 40px; color: #7f8c8d; font-style: italic; }
-        .edit-area { font-family: monospace; font-size: 13px; height: 60px; margin-bottom: 0; resize: vertical; box-sizing: border-box; padding: 5px; border: 1px solid #ccc; border-radius: 4px; width: 100%; }
-        .id-input { font-family: monospace; font-size: 13px; font-weight: bold; padding: 6px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        button {
+            background-color: #ff5a36; color: white; border: none;
+            padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 600;
+            cursor: pointer; width: 100%; transition: background-color 0.2s;
+        }
+        button:hover { background-color: #e04825; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .tarjeta { background-color: #121214; padding: 25px; border-radius: 15px; border: 1px solid #2a2a32; text-align: left; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        /* Estilos específicos para la tabla y edición */
+        .table-container { overflow-x: auto; margin-top: 25px; border-radius: 12px; border: 1px solid #2a2a32; }
+        table { width: 100%; border-collapse: collapse; background: #121214; text-align: left; }
+        th, td { padding: 15px; border-bottom: 1px solid #2a2a32; vertical-align: top; }
+        th { background-color: #1e1e24; color: #a1a1aa; font-weight: 600; font-size: 13px; text-transform: uppercase; }
+        tr:hover { background-color: #1a1a20; }
+        
+        .no-data { text-align: center; padding: 40px; color: #71717a; font-style: italic; }
+        
+        .id-input { font-family: monospace; font-weight: bold; color: #ff5a36; margin-bottom: 0; padding: 10px; }
+        .edit-area { font-family: monospace; font-size: 13px; height: 120px; resize: vertical; margin-bottom: 0; padding: 10px; }
+        
+        .btn-table-save { background-color: #3b82f6; padding: 10px; font-size: 13px; margin-bottom: 8px; }
+        .btn-table-save:hover { background-color: #2563eb; }
+        .btn-table-delete { background-color: #ef4444; padding: 10px; font-size: 13px; }
+        .btn-table-delete:hover { background-color: #dc2626; }
+
+        #status-bar { padding: 12px; border-radius: 8px; margin-top: 20px; text-align: center; font-weight: 600; font-size: 14px; }
+        .status-idle { background-color: #2a2a32; color: #a1a1aa; }
+        .status-loading { background-color: #ca8a04; color: white; }
+        .status-success { background-color: #10b981; color: white; }
+        .status-error { background-color: #ef4444; color: white; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>🍽️ Editor de Base de Datos En Vivo: restaurante-ce3c8</h1>
-    
-    <div class="grid">
-        <div class="card">
-            <h3>Navegar Base de Datos</h3>
-            <label for="collectionName">Colección (Tabla) a editar:</label>
-            <input type="text" id="collectionName" value="usuarios" placeholder="Ej: menu, pedidos, productos...">
-            <button id="btnCambiar" class="btn-primary">Cargar Colección</button>
-        </div>
+    <header>
+        <div class="logo">⚙️ Editor DataBase</div>
+        <button onclick="cerrarSesion()" style="width: auto; background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 8px 16px; display: none;" id="btn-cerrar">Salir</button>
+    </header>
 
-        <div class="card card-success">
-            <h3>Crear Nuevo Registro</h3>
-            <label for="documentData">Datos en formato JSON:</label>
-            <textarea id="documentData" rows="3" placeholder='{"nombre": "Platillo", "precio": 10}'></textarea>
-            <button id="btnGuardar" class="btn-success">Guardar en Firebase</button>
-        </div>
-    </div>
-
-    <div id="status" class="loading">Conectando con Firebase...</div>
-
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 30%;">ID del Documento (Modificable)</th>
-                    <th style="width: 50%;">Datos (JSON Modificable)</th>
-                    <th style="width: 20%;">Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <tr>
-                    <td colspan="3" class="no-data">Cargando datos...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyCI2Prwq-gjnEHga1PA5wbE3j5xmPQtKpg",
-        authDomain: "restaurante-ce3c8.firebaseapp.com",
-        projectId: "restaurante-ce3c8",
-        storageBucket: "restaurante-ce3c8.firebasestorage.app",
-        messagingSenderId: "303314247342",
-        appId: "1:303314247342:web:cc05d4360d46b3ad02173f"
-    };
-
-    let db;
-    let coleccionActual = "usuarios";
-
-    try {
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        updateStatus("Conectado a Firebase correctamente.", "success");
-        cargarColeccion(coleccionActual);
-    } catch (e) {
-        updateStatus("Error de conexión: " + e.message, "error");
-    }
-
-    // Cambiar de colección
-    document.getElementById("btnCambiar").addEventListener("click", () => {
-        const coleccion = document.getElementById("collectionName").value.trim();
-        if (coleccion) {
-            coleccionActual = coleccion;
-            cargarColeccion(coleccionActual);
-        }
-    });
-
-    // Guardar nuevo registro
-    document.getElementById("btnGuardar").addEventListener("click", async () => {
-        const jsonTexto = document.getElementById("documentData").value.trim();
-        if (!jsonTexto) return alert("Escribe datos válidos.");
-        try {
-            const objeto = JSON.parse(jsonTexto);
-            updateStatus("Guardando nuevo registro...", "loading");
-            await addDoc(collection(db, coleccionActual), objeto);
-            updateStatus("¡Registro creado!", "success");
-            document.getElementById("documentData").value = "";
-            cargarColeccion(coleccionActual);
-        } catch (error) {
-            alert("JSON inválido o error de Firebase: " + error.message);
-        }
-    });
-
-    // Leer y renderizar tabla editable
-    async function cargarColeccion(nombreColeccion) {
-        const tableBody = document.getElementById("tableBody");
-        try {
-            const querySnapshot = await getDocs(collection(db, nombreColeccion));
-            tableBody.innerHTML = "";
-            
-            if (querySnapshot.empty) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="no-data">La colección está vacía.</td></tr>`;
-                return;
-            }
-
-            querySnapshot.forEach((documento) => {
-                const idDoc = documento.id;
-                const datosDoc = documento.data();
-                
-                const fila = document.createElement("tr");
-
-                // Columna 1: ID en un input editable
-                const tdId = document.createElement("td");
-                const inputId = document.createElement("input");
-                inputId.type = "text";
-                inputId.className = "id-input";
-                inputId.value = idDoc;
-                inputId.id = `id-${idDoc}`;
-                tdId.appendChild(inputId);
-                fila.appendChild(tdId);
-
-                // Columna 2: Textarea editable con el contenido JSON
-                const tdDatos = document.createElement("td");
-                const textarea = document.createElement("textarea");
-                textarea.className = "edit-area";
-                textarea.value = JSON.stringify(datosDoc, null, 2);
-                textarea.id = `text-${idDoc}`;
-                tdDatos.appendChild(textarea);
-                fila.appendChild(tdDatos);
-
-                // Columna 3: Botones de Acción (Guardar Cambios / Eliminar)
-                const tdAcciones = document.createElement("td");
-                
-                const btnActualizar = document.createElement("button");
-                btnActualizar.className = "btn-table-save";
-                btnActualizar.innerText = "Actualizar";
-                btnActualizar.onclick = () => actualizarRegistro(idDoc);
-                
-                const btnEliminar = document.createElement("button");
-                btnEliminar.className = "btn-table-delete";
-                btnEliminar.innerText = "Eliminar";
-                btnEliminar.onclick = () => eliminarRegistro(idDoc);
-
-                tdAcciones.appendChild(btnActualizar);
-                tdAcciones.appendChild(btnEliminar);
-                fila.appendChild(tdAcciones);
-
-                tableBody.appendChild(fila);
-            });
-            updateStatus(`Viendo y editando: "${nombreColeccion}"`, "success");
-        } catch (error) {
-            tableBody.innerHTML = `<tr><td colspan="3" class="no-data">Error de permisos.</td></tr>`;
-            updateStatus("Error: " + error.message, "error");
-        }
-    }
-
-    // FUNCIÓN PARA ACTUALIZAR DATOS E ID
-    async function actualizarRegistro(idViejo) {
-        const nuevoId = document.getElementById(`id-${idViejo}`).value.trim();
-        const nuevoTextoJson = document.getElementById(`text-${idViejo}`).value;
+    <div class="zona-centrada">
         
-        if (!nuevoId) return alert("El ID del documento no puede estar vacío.");
+        <!-- PANTALLA DE BLOQUEO (CONTRASEÑA) -->
+        <div class="contenedor-principal" id="pantalla-login">
+            <h2 class="text-accent">Acceso Restringido</h2>
+            <p class="subtitulo">Introduce la contraseña de administrador para gestionar la base de datos.</p>
+            <input type="password" id="admin-pass" placeholder="Contraseña...">
+            <button onclick="verificarPassword()">Entrar al Editor</button>
+            <p id="login-error" style="color: #ef4444; font-size: 13px; margin-top: 15px; display: none;">Contraseña incorrecta.</p>
+        </div>
 
-        try {
-            const nuevoObjeto = JSON.parse(nuevoTextoJson);
-            updateStatus("Procesando cambios en Firebase...", "loading");
-            
-            // Caso 1: El usuario cambió el ID del documento
-            if (nuevoId !== idViejo) {
-                updateStatus("Clonando documento en el nuevo ID...", "loading");
-                
-                // 1. Escribir los datos en la nueva ubicación (Nuevo ID)
-                const nuevoDocRef = doc(db, coleccionActual, nuevoId);
-                await setDoc(nuevoDocRef, nuevoObjeto);
-                
-                updateStatus("Eliminando ID antiguo...", "loading");
-                
-                // 2. Eliminar el documento con el ID viejo
-                const viejoDocRef = doc(db, coleccionActual, idViejo);
-                await deleteDoc(viejoDocRef);
-                
-                updateStatus("¡ID y datos modificados con éxito!", "success");
-                
-                // Recargar toda la tabla para actualizar las referencias internas del HTML
-                cargarColeccion(coleccionActual);
-            } 
-            // Caso 2: Solo se modificó el JSON, el ID se quedó igual
-            else {
-                const docRef = doc(db, coleccionActual, idViejo);
-                await setDoc(docRef, nuevoObjeto); // setDoc sobreescribe todo el contenido de forma limpia
-                updateStatus("¡Registro modificado con éxito en la nube!", "success");
+        <!-- PANTALLA PRINCIPAL DEL EDITOR (OCULTA INICIALMENTE) -->
+        <div class="pantalla-interior oculto" id="pantalla-editor">
+            <div class="grid-2">
+                <div class="tarjeta">
+                    <h3>🔍 Navegar por Tablas</h3>
+                    <p class="subtitulo">Selecciona qué colección deseas visualizar y editar.</p>
+                    <label>Nombre de la colección:</label>
+                    <select id="collectionName">
+                        <option value="usuarios">usuarios</option>
+                        <option value="restaurantes">restaurantes</option>
+                        <option value="reservas">reservas</option>
+                    </select>
+                    <button onclick="cargarColeccionBtn()">Cargar Datos</button>
+                </div>
+
+                <div class="tarjeta" style="border-left: 3px solid #10b981;">
+                    <h3>➕ Crear Nuevo Documento</h3>
+                    <p class="subtitulo">Añade un nuevo registro enviando un formato JSON.</p>
+                    <label>Datos (JSON):</label>
+                    <textarea id="documentData" placeholder='{ "nombre": "Ejemplo" }' style="height: 60px;"></textarea>
+                    <button onclick="guardarNuevoRegistro()" style="background-color: #10b981;">Insertar en Firebase</button>
+                </div>
+            </div>
+
+            <div id="status-bar" class="status-idle">Esperando acción...</div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;">ID Único (Editable)</th>
+                            <th style="width: 55%;">Documento / Datos (JSON)</th>
+                            <th style="width: 20%;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="3" class="no-data">Selecciona una colección para empezar.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Módulos de Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Misma configuración que la web original
+        const firebaseConfig = {
+            apiKey: "AIzaSyCI2Prwq-gjnEHga1PA5wbE3j5xmPQtKpg",
+            authDomain: "restaurante-ce3c8.firebaseapp.com",
+            projectId: "restaurante-ce3c8",
+            storageBucket: "restaurante-ce3c8.firebasestorage.app",
+            messagingSenderId: "303314247342",
+            appId: "1:303314247342:web:cc05d4360d46b3ad02173f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let coleccionActual = "usuarios";
+
+        // ------ LÓGICA DE CONTRASEÑA ------
+        const PASSWORD_ADMIN = "warrior2013"; // <-- Cambia tu contraseña aquí
+
+        window.verificarPassword = function() {
+            const inputPass = document.getElementById('admin-pass').value;
+            if(inputPass === PASSWORD_ADMIN) {
+                document.getElementById('pantalla-login').classList.add('oculto');
+                document.getElementById('pantalla-editor').classList.remove('oculto');
+                document.getElementById('btn-cerrar').style.display = 'block';
+                document.querySelector('.zona-centrada').style.alignItems = 'flex-start';
+                cargarColeccionBD("usuarios");
+            } else {
+                document.getElementById('login-error').style.display = 'block';
             }
-
-        } catch (error) {
-            alert("Error: Asegúrate de que el JSON modificado sea válido.\n" + error.message);
-            updateStatus("Error al actualizar.", "error");
         }
-    }
 
-    // FUNCIÓN PARA ELIMINAR UN REGISTRO
-    async function eliminarRegistro(idDoc) {
-        if (!confirm("¿Seguro que quieres eliminar este registro permanentemente?")) return;
-        try {
-            updateStatus("Eliminando de la nube...", "loading");
-            const docRef = doc(db, coleccionActual, idDoc);
-            await deleteDoc(docRef);
-            updateStatus("Registro eliminado.", "success");
-            cargarColeccion(coleccionActual);
-        } catch (error) {
-            updateStatus("Error al eliminar: " + error.message, "error");
+        window.cerrarSesion = function() {
+            location.reload();
         }
-    }
 
-    function updateStatus(texto, clase) {
-        const statusDiv = document.getElementById("status");
-        statusDiv.innerText = texto;
-        statusDiv.className = clase;
-    }
-</script>
+        // ------ LÓGICA DEL EDITOR FIREBASE ------
+        window.cargarColeccionBtn = function() {
+            coleccionActual = document.getElementById("collectionName").value;
+            cargarColeccionBD(coleccionActual);
+        }
+
+        async function cargarColeccionBD(nombreColeccion) {
+            const tableBody = document.getElementById("tableBody");
+            updateStatus("Cargando base de datos...", "status-loading");
+            
+            try {
+                const querySnapshot = await getDocs(collection(db, nombreColeccion));
+                tableBody.innerHTML = "";
+                
+                if (querySnapshot.empty) {
+                    tableBody.innerHTML = `<tr><td colspan="3" class="no-data">La colección está vacía.</td></tr>`;
+                    updateStatus("Colección vacía cargada.", "status-idle");
+                    return;
+                }
+
+                querySnapshot.forEach((documento) => {
+                    const idDoc = documento.id;
+                    const datosDoc = documento.data();
+                    
+                    const fila = document.createElement("tr");
+
+                    // Columna 1: ID Editable
+                    const tdId = document.createElement("td");
+                    tdId.innerHTML = `<input type="text" class="id-input" value="${idDoc}" id="id-${idDoc}">`;
+                    fila.appendChild(tdId);
+
+                    // Columna 2: JSON Editable
+                    const tdDatos = document.createElement("td");
+                    tdDatos.innerHTML = `<textarea class="edit-area" id="text-${idDoc}">${JSON.stringify(datosDoc, null, 2)}</textarea>`;
+                    fila.appendChild(tdDatos);
+
+                    // Columna 3: Botones
+                    const tdAcciones = document.createElement("td");
+                    tdAcciones.innerHTML = `
+                        <button class="btn-table-save" onclick="actualizarRegistro('${idDoc}')">Guardar Cambios</button>
+                        <button class="btn-table-delete" onclick="eliminarRegistro('${idDoc}')">Eliminar Fila</button>
+                    `;
+                    fila.appendChild(tdAcciones);
+
+                    tableBody.appendChild(fila);
+                });
+                updateStatus(`Colección "${nombreColeccion}" cargada con éxito.`, "status-success");
+            } catch (error) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="no-data">Error al cargar datos.</td></tr>`;
+                updateStatus("Error: " + error.message, "status-error");
+            }
+        }
+
+        window.guardarNuevoRegistro = async function() {
+            const jsonTexto = document.getElementById("documentData").value.trim();
+            if (!jsonTexto) return alert("Escribe un JSON válido.");
+            try {
+                const objeto = JSON.parse(jsonTexto);
+                updateStatus("Guardando documento...", "status-loading");
+                await addDoc(collection(db, coleccionActual), objeto);
+                updateStatus("¡Documento creado!", "status-success");
+                document.getElementById("documentData").value = "";
+                cargarColeccionBD(coleccionActual);
+            } catch (error) {
+                alert("Error de formato JSON o conexión: " + error.message);
+                updateStatus("Error al crear registro.", "status-error");
+            }
+        }
+
+        window.actualizarRegistro = async function(idViejo) {
+            const nuevoId = document.getElementById(`id-${idViejo}`).value.trim();
+            const nuevoTextoJson = document.getElementById(`text-${idViejo}`).value;
+            
+            if (!nuevoId) return alert("El ID no puede estar vacío.");
+
+            try {
+                const nuevoObjeto = JSON.parse(nuevoTextoJson);
+                updateStatus("Sincronizando...", "status-loading");
+                
+                // Si el ID cambia, creamos uno nuevo y borramos el viejo
+                if (nuevoId !== idViejo) {
+                    const nuevoDocRef = doc(db, coleccionActual, nuevoId);
+                    await setDoc(nuevoDocRef, nuevoObjeto);
+                    const viejoDocRef = doc(db, coleccionActual, idViejo);
+                    await deleteDoc(viejoDocRef);
+                } else {
+                    const docRef = doc(db, coleccionActual, idViejo);
+                    await setDoc(docRef, nuevoObjeto);
+                }
+                
+                updateStatus("Cambios guardados correctamente.", "status-success");
+                cargarColeccionBD(coleccionActual);
+            } catch (error) {
+                alert("Error: Asegúrate de que el formato JSON sea válido.\n" + error.message);
+                updateStatus("Error en la actualización.", "status-error");
+            }
+        }
+
+        window.eliminarRegistro = async function(idDoc) {
+            if (!confirm("¿Eliminar este registro permanentemente?")) return;
+            try {
+                updateStatus("Eliminando...", "status-loading");
+                await deleteDoc(doc(db, coleccionActual, idDoc));
+                updateStatus("Registro eliminado.", "status-success");
+                cargarColeccionBD(coleccionActual);
+            } catch (error) {
+                updateStatus("Error: " + error.message, "status-error");
+            }
+        }
+
+        function updateStatus(texto, clase) {
+            const statusDiv = document.getElementById("status-bar");
+            statusDiv.innerText = texto;
+            statusDiv.className = clase;
+        }
+    </script>
 </body>
 </html>
